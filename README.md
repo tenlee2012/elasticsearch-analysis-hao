@@ -1,5 +1,5 @@
 # HAO ES 分词器
-##简介
+## 简介
 > **如何开发一个ES分词插件**请参考 [这里](https://github.com/tenlee2012/elasticsearch-analysis-demo)
 
 主要参考了 [IK](https://github.com/medcl/elasticsearch-analysis-ik) 和 [HanLP](https://github.com/hankcs/HanLP)
