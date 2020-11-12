@@ -29,6 +29,10 @@ vX.Y.Z | X.Y.Z
 
 最后重启ES
 
+### ES 版本升级
+如果没有你需要的对应ES版本，修改`pom.xml`->`elasticsearch.version`的值为对应版本，然后执行
+`mvn clean package -Dmaven.test.skip=true`，就可以得到插件的`zip`安装包。
+
 ### 自定义分词器
 下面是自定义分词器可用的配置项
 
