@@ -24,6 +24,7 @@ vX.Y.Z | X.Y.Z
 ## 使用
 ### 安装
 方式1. `bin/elasticsearch-plugin install file:///Users/xiaoming/Download/analysis-hao.zip`
+
 方式2. 解压后，放在es plugins目录即可。
 然后重启ES
 
