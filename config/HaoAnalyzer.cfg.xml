@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
+<properties>
+    <comment>HAO Analyzer 扩展配置</comment>
+    <!-- 算法模型路径 -->
+    <entry key="baseDictionary">base_dictionary.json</entry>
+    <entry key="customerDictionaryFile">custom_dictionary.txt</entry>
+    <!-- 第一次执行的时间 HH:MM:ss 建议每天23点同步一次-->
+    <entry key="syncDicTime">23:00:00</entry>
+    <!-- 执行周期 -->
+    <entry key="syncDicPeriodTime">86400</entry>
+    <entry key="remoteFreqDict">http://youdomain.com/custom_dictionary.txt</entry>
+    <!-- 钉钉机器人URL -->
+    <entry key="dingWebHookUrl">
+        https://oapi.dingtalk.com/robot/send?access_token=d7f1
+    </entry>
+    <!-- 钉钉通知文案 -->
+    <entry key="dingMsgContent">本地分词器失败，失败内容:{text}，失败原因:{reason}</entry>
+
+</properties>
