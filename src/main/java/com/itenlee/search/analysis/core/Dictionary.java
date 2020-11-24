@@ -67,8 +67,8 @@ public class Dictionary {
                         if (cfg.getRemoteFreqDict() != null) {
                             // 建立监控线程
                             logger.info("start monitor when {}", cfg.getSyncDicTime());
-                            // 600 秒是初始延迟可以修改的 600是间隔时间 单位秒
-                            pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), DateUtil.calcTimeGap(cfg.getSyncDicTime()), cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
+                            long initialDelay = TextUtility.isEmpty(cfg.getSyncDicTime()) ? 300 : DateUtil.calcTimeGap(cfg.getSyncDicTime());
+                            pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), initialDelay, cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
                         }
                         logger.info("dic init ok");
                     } catch (Exception e) {
