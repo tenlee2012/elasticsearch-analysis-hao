@@ -9,6 +9,11 @@ import java.util.stream.Stream;
  * @date 2020/6/3
  */
 public class TextUtility {
+
+    public static boolean isEmpty(String str) {
+        return str == null || str.length() == 0;
+    }
+
     //链接符号
     private static final String[] STOP_WORD = ("!\n" + "\"\n" + "#\n" + "$\n" + "%\n" + "&\n"
             + "'\n" + "(\n" + ")\n" + "*\n" + "+\n" + ",\n" + "-\n" + ".\n" + "/\n" + ":\n" + ";\n" + "<\n" + "=\n"
