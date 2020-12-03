@@ -46,7 +46,7 @@ vX.Y.Z | X.Y.Z
 ### ES 版本升级
 如果没有你需要的对应ES版本，要修改一下几个地方：
 1. 修改`pom.xml`->`elasticsearch.version`的值为对应版本。
-2. 通过查看`{ES_HOME}/lib`文件夹下面`jackson-core`的版本号，修改`pom.xml`->`jackson.version`为对应版本号
+2. 通过查看`{ES_HOME}/lib`文件夹下面`jackson-core`的版本号，修改`pom.xml`->`jackson.version`为对应版本号(依赖版本号可[戳此](https://github.com/elastic/elasticsearch/blob/v7.10.0/buildSrc/version.properties)查)
 3. 编译，按照响应报错修改代码，比如可能有`HaoTokenizerFactory.java`的构造方法。
 最后执行 `mvn clean package -Dmaven.test.skip=true`，就可以得到插件的`zip`安装包。
 
