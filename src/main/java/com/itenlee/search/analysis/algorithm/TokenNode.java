@@ -8,14 +8,20 @@ package com.itenlee.search.analysis.algorithm;
  */
 public class TokenNode {
     /**
-     * url,字母，数字，中文数字的标签
+     * 单词标签
      */
     public static final String ALPHA_TAG = "alpha";
     /**
-     * 标签符号的标签
+     * 标点符号的标签
      */
     public static final String PUNC_TAG = "punc";
+    /**
+     * url标签
+     */
     public static final String URL_TAG = "url";
+    /**
+     * 数字标签
+     */
     public static final String NUM_TAG = "num";
 
     /**
