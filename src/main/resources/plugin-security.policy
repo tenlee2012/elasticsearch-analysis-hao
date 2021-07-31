@@ -1,11 +1,14 @@
 grant {
-  // needed because of the hot reload functionality
-  permission java.io.FilePermission "<<ALL FILES>>", "read,write,delete";
   permission java.net.SocketPermission "*", "accept,connect,resolve"; // okhttp
   permission java.lang.RuntimePermission "getClassLoader"; // okhttp
   permission java.net.NetPermission "getProxySelector"; // okhttp
   permission java.lang.RuntimePermission "accessDeclaredMembers"; // jackson
   permission java.lang.reflect.ReflectPermission "suppressAccessChecks"; // jackson
-  permission java.lang.RuntimePermission "*"; // tensorflow
-  permission java.io.FilePermission "<<ALL FILES>>", "write";
+  permission java.lang.RuntimePermission "createClassLoader";
+  permission java.lang.RuntimePermission "accessDeclaredMembers";
+  permission java.lang.RuntimePermission "getClassLoader";
+  permission java.lang.RuntimePermission "setContextClassLoader";
+  permission java.lang.RuntimePermission "setFactory";
+  permission java.lang.RuntimePermission "loadLibrary.*";
+  permission java.lang.RuntimePermission "accessClassInPackage.*";
 };
