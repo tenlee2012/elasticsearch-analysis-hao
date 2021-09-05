@@ -15,7 +15,7 @@ import java.util.List;
 public class DijkstraSegTest extends TestCase {
 
     Settings settings = Settings.builder()
-            .put("path.home", "~/work/elasticsearch-analysis-hao/target")
+            .put("path.home", "~/workspace/elasticsearch-analysis-hao/target")
             .put("enableFallBack", "true")
             .put("enableFailDingMsg", "false")
             .build();
@@ -27,7 +27,7 @@ public class DijkstraSegTest extends TestCase {
         Dictionary.initial(configuration);
         Dictionary dic = Dictionary.getInstance();
         String s = "俄罗斯大厦门🤣";
-        s = "99mm,66ka,66,demo,99.990.1,9.9";
+        s = "GPS卫星定位,中华字,中華字,snh48,99mm,66ka,66,demo,99.990.1,9.9";
         System.out.println("====start===");
         List<Term> terms = null;
         DijkstraSeg dijkstraSeg = new DijkstraSeg(dic);

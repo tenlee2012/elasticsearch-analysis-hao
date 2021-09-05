@@ -93,8 +93,9 @@ public class Dictionary {
     private void loadDict() throws Exception {
         TreeMap<String, Long> baseDictionary = new TreeMap<>();
         try {
-            baseDictionary = JSONUtil.parseJSON(new File(configuration.getBaseDictionaryFile()), new TypeReference<TreeMap<String, Long>>() {
-            });
+            baseDictionary = JSONUtil
+                .parseJSON(new File(configuration.getBaseDictionaryFile()), new TypeReference<TreeMap<String, Long>>() {
+                });
         } catch (Exception e) {
             logger.error("base dictionary load fail:{}", e.getMessage());
         }
@@ -120,14 +121,15 @@ public class Dictionary {
                     continue;
                 }
                 String[] wordFreq = line.split(",");
+                String cleanWord = clean(wordFreq[0]); // 把自定义的词归一化处理
                 if (wordFreq.length == 3 && "1".equals(wordFreq[2])) {
                     // 是元词
-                    this.metaWords.add(wordFreq[0]);
+                    this.metaWords.add(cleanWord);
                 }
                 if (wordFreq.length == 1) {
-                    extFreq.put(wordFreq[0], 100000L);
+                    extFreq.put(cleanWord, 100000L);
                 } else {
-                    extFreq.put(wordFreq[0], Long.parseLong(wordFreq[1]));
+                    extFreq.put(cleanWord, Long.parseLong(wordFreq[1]));
                 }
             }
 
