@@ -5,7 +5,7 @@ import com.itenlee.search.analysis.core.Dictionary;
 import com.itenlee.search.analysis.help.ESPluginLoggerFactory;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.core.PathUtils;
+import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
@@ -131,10 +131,9 @@ public class Configuration {
     }
 
     private static Path getDataInPluginDir() {
-        return PathUtils
-                .get(new File(AnalysisHaoPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-                        .getParent(), "data")
-                .toAbsolutePath();
+        return PathUtils.get(
+            new File(AnalysisHaoPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent(),
+            "data").toAbsolutePath();
     }
 
     private static String getFilePath(String fileName) {
@@ -150,10 +149,9 @@ public class Configuration {
     }
 
     private static Path getConfigInPluginDir() {
-        return PathUtils
-                .get(new File(AnalysisHaoPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath())
-                        .getParent(), "config")
-                .toAbsolutePath();
+        return PathUtils.get(
+            new File(AnalysisHaoPlugin.class.getProtectionDomain().getCodeSource().getLocation().getPath()).getParent(),
+            "config").toAbsolutePath();
     }
 
     private static void initialProperties(Environment env) {
@@ -313,22 +311,12 @@ public class Configuration {
 
     @Override
     public String toString() {
-        return "Configuration{" +
-                "environment=" + environment +
-                ", settings=" + settings +
-                ", indexMode=" + indexMode +
-                ", enableOOV=" + enableOOV +
-                ", indexName='" + indexName + '\'' +
-                ", enableSingleWord=" + enableSingleWord +
-                ", enableFallBack=" + enableFallBack +
-                ", enableFailDingMsg=" + enableFailDingMsg +
-                ", dingWebHookUrl='" + dingWebHookUrl + '\'' +
-                ", dingMsgContent='" + dingMsgContent + '\'' +
-                ", customerDictionaryFile='" + customerDictionaryFile + '\'' +
-                ", freqFile='" + baseDictionaryFile + '\'' +
-                ", remoteFreqDict='" + remoteFreqDict + '\'' +
-                ", syncDicTime='" + syncDicTime + '\'' +
-                ", syncDicPeriodTime='" + syncDicPeriodTime + '\'' +
-                '}';
+        return "Configuration{" + "environment=" + environment + ", settings=" + settings + ", indexMode=" + indexMode
+            + ", enableOOV=" + enableOOV + ", indexName='" + indexName + '\'' + ", enableSingleWord=" + enableSingleWord
+            + ", enableFallBack=" + enableFallBack + ", enableFailDingMsg=" + enableFailDingMsg + ", dingWebHookUrl='"
+            + dingWebHookUrl + '\'' + ", dingMsgContent='" + dingMsgContent + '\'' + ", customerDictionaryFile='"
+            + customerDictionaryFile + '\'' + ", freqFile='" + baseDictionaryFile + '\'' + ", remoteFreqDict='"
+            + remoteFreqDict + '\'' + ", syncDicTime='" + syncDicTime + '\'' + ", syncDicPeriodTime='"
+            + syncDicPeriodTime + '\'' + '}';
     }
 }
