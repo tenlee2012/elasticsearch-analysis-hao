@@ -14,11 +14,8 @@ import java.util.List;
  */
 public class DijkstraSegTest extends TestCase {
 
-    Settings settings = Settings.builder()
-            .put("path.home", "~/workspace/elasticsearch-analysis-hao/target")
-            .put("enableFallBack", "true")
-            .put("enableFailDingMsg", "false")
-            .build();
+    Settings settings = Settings.builder().put("path.home", "~/workspace/elasticsearch-analysis-hao/target")
+        .put("enableFallBack", "true").put("enableFailDingMsg", "false").build();
     Environment env = new Environment(settings, null);
     Configuration configuration = new Configuration(null, null, env, settings).setIndexMode(true);
 

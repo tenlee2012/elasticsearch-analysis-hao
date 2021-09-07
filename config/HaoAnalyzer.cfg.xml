@@ -3,7 +3,7 @@
 <properties>
     <comment>HAO Analyzer 扩展配置</comment>
     <!-- 算法模型路径 -->
-    <entry key="baseDictionary">base_dictionary.json</entry>
+    <entry key="baseDictionary">base_dictionary.txt</entry>
     <entry key="customerDictionaryFile">custom_dictionary.txt</entry>
     <!-- 第一次执行的时间 HH:MM:ss 建议每天23点同步一次,如果为空则当前时间300s后开始执行-->
     <entry key="syncDicTime">23:00:00</entry>

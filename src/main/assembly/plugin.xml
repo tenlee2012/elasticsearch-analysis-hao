@@ -43,9 +43,6 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <includes>
                 <include>com.squareup.okhttp3:okhttp</include>
-                <include>com.google.guava:guava</include>
-                <include>org.tensorflow:tensorflow</include>
-                <include>org.tensorflow:proto</include>
                 <include>com.hankcs:hanlp</include>
                 <include>com.vdurmont:emoji-java</include>
             </includes>
