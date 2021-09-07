@@ -1,6 +1,5 @@
 package com.itenlee.search.analysis.help;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import org.apache.logging.log4j.Logger;
 
 /**
@@ -28,35 +27,9 @@ public class DingRotService {
         String json = String.format(MESSAGE_TEXT, content);
         try {
             String body = HttpClientUtil.getInstance().postJSON(webHook, json);
-
-            DingTalkRespDTO dingTalkResp = JSONUtil.parseJSON(body, DingTalkRespDTO.class);
-            if (dingTalkResp.getErrcode() != 0) {
-                logger.error("error send ding talk content:{}, code:{}, msg:{}", content, dingTalkResp.errcode, dingTalkResp.errmsg);
-            }
+            logger.info("error send ding talk content:{}, response: {}", content, body);
         } catch (Exception e) {
             logger.error("error send ding talk content:{} error", content, e);
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    static public class DingTalkRespDTO {
-        private int errcode;
-        private String errmsg;
-
-        public int getErrcode() {
-            return errcode;
-        }
-
-        public void setErrcode(int errcode) {
-            this.errcode = errcode;
-        }
-
-        public String getErrmsg() {
-            return errmsg;
-        }
-
-        public void setErrmsg(String errmsg) {
-            this.errmsg = errmsg;
         }
     }
 }

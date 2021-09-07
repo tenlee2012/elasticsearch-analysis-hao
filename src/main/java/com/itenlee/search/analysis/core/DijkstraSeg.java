@@ -51,8 +51,6 @@ public class DijkstraSeg {
         StringBuilder sb = new StringBuilder();
         // 字符串字符对应的nodes数组的坐标
         List<Integer> char2NodeIndex = new ArrayList<>();
-        // nodes节点对应字符串字符的坐标
-        int[] node2CharIndex = new int[nodes.size()];
         int charLen = 0;
         for (int i = 0; i < nodes.size(); i++) {
             TokenNode node = nodes.get(i);
@@ -69,7 +67,6 @@ public class DijkstraSeg {
                 sb.append("。");
                 wordLen = 1;
             }
-            node2CharIndex[i] = charLen;
             charLen += wordLen;
         }
         WordNet wordNetStorage = new WordNet(nodes, dictionary.getLogTotal());
@@ -79,11 +76,17 @@ public class DijkstraSeg {
         for (int i = 0; i < graph.length; ) {
             int nodeIndex = char2NodeIndex.get(i);
             if (TokenNode.NUM_TAG.equals(nodes.get(nodeIndex).getTag()) || TokenNode.ALPHA_TAG.equals(nodes.get(nodeIndex).getTag())) {
-                // 把 数字/字母 加入到图中, 比如giao
-                wordNetStorage.add(nodeIndex + 1,
-                        new Vertex(nodes.subList(nodeIndex, nodeIndex + 1), dictionary.getLogTotal()));
+                // 把 数字/字母 加入到图中, 比如 SNH48
+                for (int j = nodeIndex; j < nodes.size(); j++) {
+                    // 如果后续是 字母或者数字，把连续的的当成一个词语。
+                    if (!TokenNode.NUM_TAG.equals(nodes.get(j).getTag()) && !TokenNode.ALPHA_TAG.equals(nodes.get(j).getTag())) {
+                        break;
+                    }
+                    wordNetStorage.add(nodeIndex + 1,
+                            new Vertex(nodes.subList(nodeIndex, j + 1), dictionary.getLogTotal()));
+                }
                 for (Map.Entry<Integer, Double> entry : graph[i].entrySet()) {
-                    int offset = char2NodeIndex.get(entry.getKey()); // [哥=7,真实是3, nodeIndex=2] [月=2,真实是1,nodeIndex=1]
+                    int offset = char2NodeIndex.get(entry.getKey()); // 比如[12月SNH48和giao哥过来] [哥=13,真实是7, nodeIndex=7] [月=2,真实是1,nodeIndex=1]
                     if (offset <= nodeIndex) {
                         continue;
                     }

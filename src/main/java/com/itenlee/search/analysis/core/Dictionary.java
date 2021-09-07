@@ -1,19 +1,16 @@
 package com.itenlee.search.analysis.core;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.hankcs.hanlp.HanLP;
 import com.itenlee.search.analysis.algorithm.AhoCorasickDoubleArrayTrie;
 import com.itenlee.search.analysis.algorithm.TokenNode;
 import com.itenlee.search.analysis.help.DateUtil;
 import com.itenlee.search.analysis.help.ESPluginLoggerFactory;
-import com.itenlee.search.analysis.help.JSONUtil;
 import com.itenlee.search.analysis.help.TextUtility;
 import com.itenlee.search.analysis.lucence.Configuration;
 import com.vdurmont.emoji.CustomEmojiParser;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.AccessController;
@@ -36,7 +33,8 @@ import java.util.regex.Pattern;
 public class Dictionary {
     private static final Logger logger = ESPluginLoggerFactory.getLogger(Dictionary.class.getName());
 
-    private static final Pattern URL_NUM_ALPHA_CH_NUM_REG = Pattern.compile("(?<url>(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|])|(?<num>[0-9]+(\\.[0-9]+)*)|(?<alpha>[a-zA-Z]+)");
+    private static final Pattern URL_NUM_ALPHA_CH_NUM_REG = Pattern.compile(
+        "(?<url>(https?|ftp|file)://[-A-Za-z0-9+&@#/%?=~_|!:,.;]+[-A-Za-z0-9+&@#/%=~_|])|(?<num>[0-9]+(\\.[0-9]+)*)|(?<alpha>[a-zA-Z]+)");
     private static final Pattern CH_NUM_REG = Pattern.compile("[一两二三四五六七八九十零][一两二三四五六七八九十零百千万兆亿]*");
     private static final String PUNC = TextUtility.sbc2dbcCase(" 。[],?!+-*/'\"…<>=《》`~！@#￥%……&();:{}\\.|^_、」「");
 
@@ -67,8 +65,10 @@ public class Dictionary {
                         if (cfg.getRemoteFreqDict() != null) {
                             // 建立监控线程
                             logger.info("start monitor when {}", cfg.getSyncDicTime());
-                            long initialDelay = TextUtility.isEmpty(cfg.getSyncDicTime()) ? 300 : DateUtil.calcTimeGap(cfg.getSyncDicTime());
-                            pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), initialDelay, cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
+                            long initialDelay = TextUtility.isEmpty(cfg.getSyncDicTime()) ? 300 :
+                                DateUtil.calcTimeGap(cfg.getSyncDicTime());
+                            pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), initialDelay,
+                                cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
                         }
                         logger.info("dic init ok");
                     } catch (Exception e) {
@@ -92,12 +92,19 @@ public class Dictionary {
      */
     private void loadDict() throws Exception {
         TreeMap<String, Long> baseDictionary = new TreeMap<>();
-        try {
-            baseDictionary = JSONUtil.parseJSON(new File(configuration.getBaseDictionaryFile()), new TypeReference<TreeMap<String, Long>>() {
-            });
-        } catch (Exception e) {
+        try (BufferedReader br = new BufferedReader(new FileReader(configuration.getBaseDictionaryFile()))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.length() == 0) {
+                    continue;
+                }
+                String[] wordFreq = line.split(",");
+                baseDictionary.put(wordFreq[0], Long.parseLong(wordFreq[1]));
+            }
+        } catch (IOException e) {
             logger.error("base dictionary load fail:{}", e.getMessage());
         }
+
         TreeMap<String, Long> extFreq = this.loadCustomerDictionary();
         this.total = baseDictionary.values().stream().reduce(0L, Long::sum);
         this.total = baseDictionary.values().stream().reduce(this.total, Long::sum);
@@ -120,14 +127,15 @@ public class Dictionary {
                     continue;
                 }
                 String[] wordFreq = line.split(",");
+                String cleanWord = clean(wordFreq[0]); // 把自定义的词归一化处理
                 if (wordFreq.length == 3 && "1".equals(wordFreq[2])) {
                     // 是元词
-                    this.metaWords.add(wordFreq[0]);
+                    this.metaWords.add(cleanWord);
                 }
                 if (wordFreq.length == 1) {
-                    extFreq.put(wordFreq[0], 100000L);
+                    extFreq.put(cleanWord, 100000L);
                 } else {
-                    extFreq.put(wordFreq[0], Long.parseLong(wordFreq[1]));
+                    extFreq.put(cleanWord, Long.parseLong(wordFreq[1]));
                 }
             }
 
@@ -226,7 +234,7 @@ public class Dictionary {
         sentence = sentence.replaceAll(TextUtility.WHITESPACE_CHARCLASS, " ");
         sentence = TextUtility.sbc2dbcCase(sentence);
         String sentenceFinal = sentence;
-        String simpleCN = AccessController.doPrivileged((PrivilegedAction<String>) () -> {
+        String simpleCN = AccessController.doPrivileged((PrivilegedAction<String>)() -> {
             return HanLP.convertToSimplifiedChinese(sentenceFinal);
         });
         // 如果opencc识别成功,长度应该是相等的
