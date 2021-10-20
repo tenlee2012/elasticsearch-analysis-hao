@@ -23,7 +23,7 @@ QQ交流群：743457803
 
  - 相比HanLp，比HanLP更轻量，分词更可控，没有一些智能的人名等预测功能，可能会导致分词不稳定不准确。并且HanLP也没有官方的ES插件。
 
- - 根据词频计算最短路，穷举出可能的词，而不是所有的词，如果穷举的词不对，可以调词频来纠正，词频文件是**可读性更好**的`json`文件
+ - 根据词频计算最短路，穷举出可能的词，而不是所有的词，如果穷举的词不对，可以调词频来纠正，词频文件是**可读性更好**的`txt`文件
 
  - 支持元词，比如`俄罗斯`不会再拆分成`俄`和`罗斯`（`罗斯`是常用人名）。这样搜`罗斯`就不会把`俄罗斯`相关文档召回
 
@@ -54,8 +54,7 @@ vX.Y.Z | X.Y.Z
 ### ES 版本升级
 如果没有你需要的对应ES版本，要修改一下几个地方：
 1. 修改`pom.xml`->`elasticsearch.version`的值为对应版本。
-2. 通过查看`{ES_HOME}/lib`文件夹下面`jackson-core`的版本号，修改`pom.xml`->`jackson.version`为对应版本号(依赖版本号可[戳此](https://github.com/elastic/elasticsearch/blob/v7.10.0/buildSrc/version.properties)查)
-3. 编译，按照响应报错修改代码，比如可能有`HaoTokenizerFactory.java`的构造方法。
+2. 编译，按照响应报错修改代码，比如可能有`HaoTokenizerFactory.java`的构造方法。
 最后执行 `mvn clean package -Dmaven.test.skip=true`，就可以得到插件的`zip`安装包。
 
 ### 自定义分词器
@@ -118,9 +117,6 @@ PUT test/
             "tokenizer": "my_search_token"
           },
           "title_analyzer": {
-            "filter": [
-              "lowercase"
-            ],
             "char_filter": [
               "html_strip"
             ],
@@ -130,14 +126,12 @@ PUT test/
         },
         "tokenizer": {
           "my_title_index_token": {
-            "enableOOV": "false",
             "enableFailDingMsg": "true",
             "type": "hao_index_mode",
             "enableSingleWord": "true",
             "enableFallBack": "true"
           },
           "my_search_token": {
-            "enableOOV": "false",
             "enableFailDingMsg": "true",
             "type": "hao_search_mode",
             "enableSingleWord": "true",
