@@ -57,9 +57,9 @@ vX.Y.Z | X.Y.Z
 2. 编译，按照响应报错修改代码，比如可能有`HaoTokenizerFactory.java`的构造方法。
 最后执行 `mvn clean package -Dmaven.test.skip=true`，就可以得到插件的`zip`安装包。
 
-### 自定义分词器
+### 分词器
 下面是自定义分词器可用的配置项
-
+#### 参数
 ---
 配置项参数 | 功能 | 默认值 
 ----|---|---
@@ -68,6 +68,20 @@ vX.Y.Z | X.Y.Z
 `enableFailDingMsg` | 是否启动失败钉钉通知,通知地址为`HttpAnalyzer.cfg.xml`的`dingWebHookUrl`字段。| `false`
 `enableSingleWord` | 是否使用细粒度返回的单字。比如`体力值`，分词结果只存`体力值`,`体力`,而不存`值` | `false`
 
+#### 内置分词器介绍
+- `hao_index_mode`
+
+会根据词库的词条和权重，递归分词，直到该词不可分。如果设置了`enableSingleWord=true`，会一直分到单字为止。
+
+例如这段文本`南京市长江大桥`
+1. `南京市长江大桥` ==> `南京市`, `长江大桥`
+2. `南京市`==>`南京`,`市`, `长江大桥`==>`长江`,`大桥`
+3. 如果`enableSingleWord=false`，递归停止，得到分词为`南京市`,`南京`,`市`,`长江大桥`,`长江`,`大桥`
+4. 如果`enableSingleWord=true`，继续递归，直到单字位置，得到分词为`南京市`,`南京`,`南`,`京`,`市`,`长江大桥`,`长江`,`长`,`江`,`大桥`,`大`,`桥`
+- `hao_search_mode`
+
+该模式下，相当于`hao_index_mode`模式只递归一次。
+分词结果为`南京市`, `长江大桥`。因为该模式下`enableIndexMode=false`，如果改成`true`，则和`hao_index_mode`一样的效果。
 ### HaoAnalyzer.cfg.xml 配置
 
 ---
