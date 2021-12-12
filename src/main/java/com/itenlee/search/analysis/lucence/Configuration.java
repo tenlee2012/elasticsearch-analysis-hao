@@ -5,7 +5,7 @@ import com.itenlee.search.analysis.core.Dictionary;
 import com.itenlee.search.analysis.help.ESPluginLoggerFactory;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.common.inject.Inject;
-import org.elasticsearch.core.PathUtils;
+import org.elasticsearch.common.io.PathUtils;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.env.Environment;
 import org.elasticsearch.index.IndexSettings;
