@@ -186,4 +186,4 @@ test/_analyze
 
 |                             微信                             | 
 | :----------------------------------------------------------: | 
-| ![微信付款码](https://cdn.jsdelivr.net/gh/tenlee2012/file/img/20210421111513.jpg) |
+| ![微信付款码](https://cdn.jsdelivr.net/gh/tenlee2012/file/img/20211213142556.png) |
