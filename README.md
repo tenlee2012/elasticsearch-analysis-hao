@@ -16,7 +16,7 @@ QQ交流群：743457803
 
  - 支持emoji搜索
  
- - *相比IK，比IK更智能，更准确，更快。*更快是参考[`AC自动机+双数`](https://github.com/hankcs/AhoCorasickDoubleArrayTrie)组算法
+ - *相比IK，比IK更智能，更准确，更快。* 更快是参考[`AC自动机+双数组`](https://github.com/hankcs/AhoCorasickDoubleArrayTrie)分词算法
  > 比如IK `ik_max_word`是穷举所有可能词，导致搜索一些不相关的也会被搜到。
 `任性冲动过`分词结果居然有`任性 性冲动 动过`,那么搜`性冲动`就会把这个doc搜索到。
 `南京市长江大桥`，结果是`南京市 市长 长江大桥`，那么搜`市长`会把这个doc搜索到。
