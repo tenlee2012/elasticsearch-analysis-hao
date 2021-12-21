@@ -43,7 +43,8 @@ public class TokenizerService {
             return terms;
         }
         try {
-            terms = dijkstraSeg.segSentence(text, configuration.isIndexMode(), configuration.isEnableOOV(), configuration.isEnableSingleWord());
+            terms = dijkstraSeg.segSentence(text, configuration.isIndexMode(), configuration.getAutoWordLength(),
+                configuration.isEnableSingleWord());
         } catch (Exception e) {
             logger.error("text:{}, get remote tokenizer error.", text, e);
             if (configuration.isEnableFailDingMsg() && configuration.getDingWebHookUrl() != null && configuration.getDingMsgContent() != null) {

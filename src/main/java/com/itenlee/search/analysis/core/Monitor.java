@@ -78,7 +78,7 @@ public class Monitor implements Runnable {
                     last_modified = response.header("Last-Modified");
                     eTags = response.header("ETag");
 
-                    FileOutputStream fos = new FileOutputStream(this.configuration.getCustomerDictionaryFile());
+                    FileOutputStream fos = new FileOutputStream(configuration.getRemoteDicFile());
                     fos.write(response.body().bytes());
                     fos.close();
                     Dictionary.getInstance().reLoadMainDict();

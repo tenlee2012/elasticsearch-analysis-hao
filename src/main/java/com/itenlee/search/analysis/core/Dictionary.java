@@ -11,8 +11,10 @@ import com.vdurmont.emoji.CustomEmojiParser;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -60,7 +62,6 @@ public class Dictionary {
                 if (instance == null) {
                     try {
                         instance = new Dictionary(cfg);
-                        instance.loadDict();
 
                         if (cfg.getRemoteFreqDict() != null) {
                             // 建立监控线程
@@ -69,7 +70,13 @@ public class Dictionary {
                                 DateUtil.calcTimeGap(cfg.getSyncDicTime());
                             pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), initialDelay,
                                 cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
+                            // 把远程词库的文件 放到自定义词库中
+                            if (cfg.getCustomerDictionaryFiles() == null) {
+                                cfg.setCustomerDictionaryFiles(new ArrayList<>());
+                            }
+                            cfg.getCustomerDictionaryFiles().add(cfg.getRemoteDicFile());
                         }
+                        instance.loadDict();
                         logger.info("dic init ok");
                     } catch (Exception e) {
                         throw new RuntimeException(e);
@@ -92,7 +99,8 @@ public class Dictionary {
      */
     private void loadDict() throws Exception {
         TreeMap<String, Long> baseDictionary = new TreeMap<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(configuration.getBaseDictionaryFile()))) {
+        try (InputStream is = new FileInputStream(configuration.getBaseDictionaryFile())) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"));
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.length() == 0) {
@@ -120,27 +128,32 @@ public class Dictionary {
      */
     private TreeMap<String, Long> loadCustomerDictionary() throws IOException {
         TreeMap<String, Long> extFreq = new TreeMap<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(configuration.getCustomerDictionaryFile()))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.length() == 0) {
-                    continue;
+        if (configuration.getCustomerDictionaryFiles() == null) {
+            return extFreq;
+        }
+        for (String customerDictionaryFile : configuration.getCustomerDictionaryFiles()) {
+            try (InputStream is = new FileInputStream(customerDictionaryFile)) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"), 10240);
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.length() == 0) {
+                        continue;
+                    }
+                    String[] wordFreq = line.split(",");
+                    String cleanWord = clean(wordFreq[0]); // 把自定义的词归一化处理
+                    if (wordFreq.length == 3 && "1".equals(wordFreq[2])) {
+                        // 是元词
+                        this.metaWords.add(cleanWord);
+                    }
+                    if (wordFreq.length == 1) {
+                        extFreq.put(cleanWord, 100000L);
+                    } else {
+                        extFreq.put(cleanWord, Long.parseLong(wordFreq[1]));
+                    }
                 }
-                String[] wordFreq = line.split(",");
-                String cleanWord = clean(wordFreq[0]); // 把自定义的词归一化处理
-                if (wordFreq.length == 3 && "1".equals(wordFreq[2])) {
-                    // 是元词
-                    this.metaWords.add(cleanWord);
-                }
-                if (wordFreq.length == 1) {
-                    extFreq.put(cleanWord, 100000L);
-                } else {
-                    extFreq.put(cleanWord, Long.parseLong(wordFreq[1]));
-                }
+            } catch (IOException e) {
+                logger.error("custom dictionary load fail:{}", e.getMessage(), e);
             }
-
-        } catch (IOException e) {
-            logger.error("custom dictionary load fail:{}", e.getMessage(), e);
         }
         return extFreq;
     }

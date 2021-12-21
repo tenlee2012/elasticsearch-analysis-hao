@@ -34,7 +34,7 @@ public class HttpClientUtil {
         if (instance == null) {
             synchronized (HttpClientUtil.class) {
                 if (instance == null) {
-                    OkHttpClient okHttpClient = initOkHttpClient(50000, 50000, 50000, 32, 1200);
+                    OkHttpClient okHttpClient = initOkHttpClient(50, 50000, 5000, 32, 1200);
                     instance = new HttpClientUtil(okHttpClient);
                 }
             }

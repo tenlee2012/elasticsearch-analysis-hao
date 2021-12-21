@@ -24,11 +24,11 @@ public class DijkstraSegTest extends TestCase {
         Dictionary.initial(configuration);
         Dictionary dic = Dictionary.getInstance();
         String s = "俄罗斯大厦门🤣";
-        s = "GPS卫星定位,中华字,中華字,snh48,99mm,66ka,66,demo,99.990.1,9.9";
+        s = "孙成功 GPS卫星定位,中华字诸葛明,中華字,徐骁snh48,99mm,66ka,66,demo,99.990.1,9.9 徐庆年";
         System.out.println("====start===");
         List<Term> terms = null;
         DijkstraSeg dijkstraSeg = new DijkstraSeg(dic);
-        terms = dijkstraSeg.segSentence(s, true, true, false);
+        terms = dijkstraSeg.segSentence(s, true, 3, false);
         for (Term term : terms) {
             System.out.printf("start=%d, end=%d, %s\n", term.getOffset(), term.getEnd(), term.getText());
         }

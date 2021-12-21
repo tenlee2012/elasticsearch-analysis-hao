@@ -4,11 +4,13 @@
     <comment>HAO Analyzer 扩展配置</comment>
     <!-- 算法模型路径 -->
     <entry key="baseDictionary">base_dictionary.txt</entry>
+    <!-- 多个文件，用英文分分号;分隔，不支持自动读取文件目录下所有文件 -->
     <entry key="customerDictionaryFile">custom_dictionary.txt</entry>
     <!-- 第一次执行的时间 HH:MM:ss 建议每天23点同步一次,如果为空则当前时间300s后开始执行-->
     <entry key="syncDicTime">23:00:00</entry>
     <!-- 执行周期 -->
     <entry key="syncDicPeriodTime">86400</entry>
+    <!-- 远程词典，下载完会存储到 remote_dic.txt 文件中 -->
     <entry key="remoteFreqDict">http://youdomain.com/custom_dictionary.txt</entry>
     <!-- 钉钉机器人URL -->
     <entry key="dingWebHookUrl">

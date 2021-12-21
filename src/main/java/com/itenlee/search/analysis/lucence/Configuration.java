@@ -17,6 +17,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -35,9 +37,9 @@ public class Configuration {
      */
     private boolean indexMode;
     /**
-     * 是否使用算法模型预测分词
+     * 根据标点符号空格等分隔后，如果该词长度<=autoWordLength，会被当做一个词
      */
-    private boolean enableOOV;
+    private int autoWordLength;
     /**
      * 索引名称
      */
@@ -65,7 +67,7 @@ public class Configuration {
     private String dingMsgContent;
 
     private String baseDictionaryFile;
-    private String customerDictionaryFile;
+    private List<String> customerDictionaryFiles;
     /**
      * 远程freq.json词库
      */
@@ -93,6 +95,11 @@ public class Configuration {
     private static final String CONFIG_FILE_NAME = "hanlp.properties";
 
     /**
+     * 远程词典存储的文件
+     */
+    public static final String REMOTE_DIC_FILE = "remote_dic.txt";
+
+    /**
      * @param indexSettings
      * @param name          分词器名称
      * @param env
@@ -105,7 +112,7 @@ public class Configuration {
         initialProperties(env);
 
         this.indexMode = settings.get("enableIndexMode", "false").equals("true");
-        this.enableOOV = settings.get("enableOOV", "false").equals("true");
+        this.autoWordLength = Integer.parseInt(settings.get("minAutoWordLength", "-1"));
         this.enableFallBack = settings.get("enableFallBack", "false").equals("true");
         this.enableFailDingMsg = settings.get("enableFailDingMsg", "false").equals("true");
         this.enableSingleWord = settings.get("enableSingleWord", "false").equals("true");
@@ -120,7 +127,13 @@ public class Configuration {
         Path dataDir = getDataInPluginDir();
         // hanlp 要设置配置文件路径
         Predefine.HANLP_PROPERTIES_PATH = dataDir.resolve(CONFIG_FILE_NAME).toString();
-        this.customerDictionaryFile = getFilePath(props.getProperty("customerDictionaryFile"));
+        String customerFiles = props.getProperty("customerDictionaryFile");
+        if (customerFiles != null && !customerFiles.isEmpty()) {
+            this.customerDictionaryFiles = new ArrayList<>();
+            for (String path : customerFiles.split(";")) {
+                this.customerDictionaryFiles.add(getFilePath(path));
+            }
+        }
         this.baseDictionaryFile = getFilePath(props.getProperty("baseDictionary"));
         Dictionary.initial(this);
 
@@ -146,6 +159,10 @@ public class Configuration {
             path = getConfigInPluginDir().resolve(fileName).toString();
         }
         return path;
+    }
+
+    public String getRemoteDicFile() {
+        return getFilePath(REMOTE_DIC_FILE);
     }
 
     private static Path getConfigInPluginDir() {
@@ -213,12 +230,12 @@ public class Configuration {
         return this;
     }
 
-    public boolean isEnableOOV() {
-        return enableOOV;
+    public int getAutoWordLength() {
+        return autoWordLength;
     }
 
-    public void setEnableOOV(boolean enableOOV) {
-        this.enableOOV = enableOOV;
+    public void setAutoWordLength(int autoWordLength) {
+        this.autoWordLength = autoWordLength;
     }
 
     public boolean isEnableFallBack() {
@@ -277,12 +294,12 @@ public class Configuration {
         return baseDictionaryFile;
     }
 
-    public String getCustomerDictionaryFile() {
-        return customerDictionaryFile;
+    public List<String> getCustomerDictionaryFiles() {
+        return customerDictionaryFiles;
     }
 
-    public void setCustomerDictionaryFile(String customerDictionaryFile) {
-        this.customerDictionaryFile = customerDictionaryFile;
+    public void setCustomerDictionaryFiles(List<String> customerDictionaryFiles) {
+        this.customerDictionaryFiles = customerDictionaryFiles;
     }
 
     public String getRemoteFreqDict() {
@@ -312,10 +329,10 @@ public class Configuration {
     @Override
     public String toString() {
         return "Configuration{" + "environment=" + environment + ", settings=" + settings + ", indexMode=" + indexMode
-            + ", enableOOV=" + enableOOV + ", indexName='" + indexName + '\'' + ", enableSingleWord=" + enableSingleWord
+            + ", minAutoWordLength=" + autoWordLength + ", indexName='" + indexName + '\'' + ", enableSingleWord=" + enableSingleWord
             + ", enableFallBack=" + enableFallBack + ", enableFailDingMsg=" + enableFailDingMsg + ", dingWebHookUrl='"
             + dingWebHookUrl + '\'' + ", dingMsgContent='" + dingMsgContent + '\'' + ", customerDictionaryFile='"
-            + customerDictionaryFile + '\'' + ", freqFile='" + baseDictionaryFile + '\'' + ", remoteFreqDict='"
+            + customerDictionaryFiles + '\'' + ", freqFile='" + baseDictionaryFile + '\'' + ", remoteFreqDict='"
             + remoteFreqDict + '\'' + ", syncDicTime='" + syncDicTime + '\'' + ", syncDicPeriodTime='"
             + syncDicPeriodTime + '\'' + '}';
     }
