@@ -9,7 +9,16 @@ import com.itenlee.search.analysis.algorithm.WordNet;
 import com.itenlee.search.analysis.help.TextUtility;
 import com.itenlee.search.analysis.lucence.Term;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.PriorityQueue;
+import java.util.TreeMap;
 
 /**
  * @author tenlee
@@ -22,7 +31,7 @@ public class DijkstraSeg {
         this.dictionary = dictionary;
     }
 
-    public List<Term> segSentence(String sentence, boolean indexMode, boolean oov, boolean enableSingleWord) {
+    public List<Term> segSentence(String sentence, boolean indexMode, int autoWordLength, boolean enableSingleWord) {
         List<TokenNode> nodes = Dictionary.buildNodes(sentence);
         List<Term> result;
         if (nodes.isEmpty()) {
@@ -30,12 +39,13 @@ public class DijkstraSeg {
             return result;
         } else if (nodes.size() == 1) {
             TokenNode node = nodes.get(0);
-            Term term = new Term(node.getStartOffset(), node.getStartOffset() + node.getText().length(), node.getText(), null);
+            Term term =
+                new Term(node.getStartOffset(), node.getStartOffset() + node.getText().length(), node.getText(), null);
             result = Collections.singletonList(term);
             return result;
         }
         ////////////////生成词网////////////////////
-        WordNet wordNetAll = generateWordNet(nodes, oov);
+        WordNet wordNetAll = generateWordNet(nodes, autoWordLength);
         ///////////////生成二元词图////////////////////
         Graph graph = wordNetAll.toGraph();
         List<Vertex> vertexList = dijkstra(graph);
@@ -47,7 +57,7 @@ public class DijkstraSeg {
         return terms;
     }
 
-    private WordNet generateWordNet(List<TokenNode> nodes, boolean oov) {
+    private WordNet generateWordNet(List<TokenNode> nodes, int autoWordLength) {
         StringBuilder sb = new StringBuilder();
         // 字符串字符对应的nodes数组的坐标
         List<Integer> char2NodeIndex = new ArrayList<>();
@@ -56,8 +66,7 @@ public class DijkstraSeg {
             TokenNode node = nodes.get(i);
             String word = node.getCleanedText();
             int wordLen = word.length();
-            if (wordLen == 1 || TokenNode.NUM_TAG.equals(node.getTag())
-                    || TokenNode.ALPHA_TAG.equals(node.getTag())) {
+            if (wordLen == 1 || TokenNode.NUM_TAG.equals(node.getTag()) || TokenNode.ALPHA_TAG.equals(node.getTag())) {
                 for (int j = 0; j < wordLen; j++) {
                     char2NodeIndex.add(i);
                 }
@@ -72,18 +81,33 @@ public class DijkstraSeg {
         WordNet wordNetStorage = new WordNet(nodes, dictionary.getLogTotal());
 
         TreeMap<Integer, Double>[] graph = dictionary.getDoubleArrayTrie().match(sb.toString());
+        int chineseCount = 0; // 汉字数量
 
         for (int i = 0; i < graph.length; ) {
             int nodeIndex = char2NodeIndex.get(i);
-            if (TokenNode.NUM_TAG.equals(nodes.get(nodeIndex).getTag()) || TokenNode.ALPHA_TAG.equals(nodes.get(nodeIndex).getTag())) {
+
+            if (nodes.get(nodeIndex).getTag() != null) {
+                // 把小于等于长度的短语作为词
+                if (chineseCount > 1 && chineseCount <= autoWordLength && graph[i - chineseCount].get(i - 1) == null) {
+                    int offset = char2NodeIndex.get(i);
+                    wordNetStorage.add(nodeIndex - chineseCount + 1,
+                        new Vertex(nodes.subList(offset - chineseCount, offset), dictionary.getLogTotal()));
+                }
+                chineseCount = 0;
+            } else {
+                chineseCount++; // 汉字数量++
+            }
+
+            if (TokenNode.NUM_TAG.equals(nodes.get(nodeIndex).getTag()) || TokenNode.ALPHA_TAG
+                .equals(nodes.get(nodeIndex).getTag())) {
                 // 把 数字/字母 加入到图中, 比如 SNH48
                 for (int j = nodeIndex; j < nodes.size(); j++) {
                     // 如果后续是 字母或者数字，把连续的的当成一个词语。
-                    if (!TokenNode.NUM_TAG.equals(nodes.get(j).getTag()) && !TokenNode.ALPHA_TAG.equals(nodes.get(j).getTag())) {
+                    if (!TokenNode.NUM_TAG.equals(nodes.get(j).getTag()) && !TokenNode.ALPHA_TAG
+                        .equals(nodes.get(j).getTag())) {
                         break;
                     }
-                    wordNetStorage.add(nodeIndex + 1,
-                            new Vertex(nodes.subList(nodeIndex, j + 1), dictionary.getLogTotal()));
+                    wordNetStorage.add(nodeIndex + 1, new Vertex(nodes.subList(nodeIndex, j + 1), dictionary.getLogTotal()));
                 }
                 for (Map.Entry<Integer, Double> entry : graph[i].entrySet()) {
                     int offset = char2NodeIndex.get(entry.getKey()); // 比如[12月SNH48和giao哥过来] [哥=13,真实是7, nodeIndex=7] [月=2,真实是1,nodeIndex=1]
@@ -104,6 +128,12 @@ public class DijkstraSeg {
             }
         }
 
+        // 最后在扫一遍，把小于等于长度的短语作为词
+        if (chineseCount > 1 && chineseCount <= autoWordLength) {
+            int nodeIndex = char2NodeIndex.get(graph.length - 1) + 1;
+            wordNetStorage.add(nodeIndex - chineseCount + 1,
+                new Vertex(nodes.subList(nodeIndex - chineseCount, nodeIndex), dictionary.getLogTotal()));
+        }
         return wordNetStorage;
     }
 
@@ -126,7 +156,8 @@ public class DijkstraSeg {
         que.add(new PathState(0, vertexes.length - 1));
         while (!que.isEmpty()) {
             PathState p = que.poll();
-            if (d[p.vertex] < p.cost) continue;
+            if (d[p.vertex] < p.cost)
+                continue;
             for (EdgeFrom edgeFrom : edgesTo[p.vertex]) {
                 if (d[edgeFrom.from] > d[p.vertex] + edgeFrom.weight) {
                     d[edgeFrom.from] = d[p.vertex] + edgeFrom.weight;

@@ -5,21 +5,26 @@ import com.itenlee.search.analysis.algorithm.AhoCorasickDoubleArrayTrie;
 import com.itenlee.search.analysis.algorithm.TokenNode;
 import com.itenlee.search.analysis.help.DateUtil;
 import com.itenlee.search.analysis.help.ESPluginLoggerFactory;
+import com.itenlee.search.analysis.help.HttpClientUtil;
 import com.itenlee.search.analysis.help.TextUtility;
 import com.itenlee.search.analysis.lucence.Configuration;
 import com.vdurmont.emoji.CustomEmojiParser;
+import okhttp3.Response;
 import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.TreeMap;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +45,7 @@ public class Dictionary {
 
     private static volatile Dictionary instance;
     private static ScheduledExecutorService pool = Executors.newScheduledThreadPool(1);
+    private static HttpClientUtil httpClient = HttpClientUtil.getInstance();
 
     private Configuration configuration;
     private HashSet<String> metaWords = new HashSet<>();
@@ -60,6 +66,7 @@ public class Dictionary {
                 if (instance == null) {
                     try {
                         instance = new Dictionary(cfg);
+
                         instance.loadDict();
 
                         if (cfg.getRemoteFreqDict() != null) {
@@ -91,78 +98,127 @@ public class Dictionary {
      * 读取META_WORDS_FILE，里边的词不再做更细颗粒度的分割
      */
     private void loadDict() throws Exception {
-        TreeMap<String, Long> baseDictionary = new TreeMap<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(configuration.getBaseDictionaryFile()))) {
+        this.total = 0;
+        Map<String, Double> wordFreqMap = new HashMap<>(1048576); // 先100w吧
+        try (InputStream is = new FileInputStream(configuration.getBaseDictionaryFile());
+            BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.length() == 0) {
                     continue;
                 }
                 String[] wordFreq = line.split(",");
-                baseDictionary.put(wordFreq[0], Long.parseLong(wordFreq[1]));
+                Double freq = Double.parseDouble(wordFreq[1]);
+                wordFreqMap.put(wordFreq[0], freq);
+                this.total += freq;
             }
         } catch (IOException e) {
             logger.error("base dictionary load fail:{}", e.getMessage());
         }
 
-        TreeMap<String, Long> extFreq = this.loadCustomerDictionary();
-        this.total = baseDictionary.values().stream().reduce(0L, Long::sum);
-        this.total = baseDictionary.values().stream().reduce(this.total, Long::sum);
+        this.loadCustomerDictionary(wordFreqMap);
+        this.loadRemoteDictionary(wordFreqMap);
         this.logTotal = Math.log(total);
-        this.buildTrie(baseDictionary, extFreq);
+        this.buildTrie(wordFreqMap);
+    }
+
+    /**
+     * 加载远程词库
+     *
+     * @param wordFreqMap
+     */
+    private void loadRemoteDictionary(Map<String, Double> wordFreqMap) {
+        String location = this.configuration.getRemoteFreqDict();
+        if (location == null || location.isEmpty()) {
+            return;
+        }
+        Response response = null;
+        try {
+            response = httpClient.get(location);
+        } catch (PrivilegedActionException e) {
+            logger.warn("loadRemoteDictionary error", e);
+            return;
+        }
+        //返回200 才做操作
+        if (response.body() == null || response.code() != 200) {
+            logger.warn("loadRemoteDictionary remote status is not 200, actual {}", response.code());
+            return;
+        }
+        // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
+        Monitor.lastModified = response.header("Last-Modified");
+        Monitor.eTags = response.header("ETag");
+        try (BufferedReader in = new BufferedReader(response.body().charStream())) {
+            String line;
+            while ((line = in.readLine()) != null) {
+                processDicLine(wordFreqMap, line);
+            }
+        } catch (Exception e) {
+            logger.warn("loadRemoteDictionary error", e);
+        } finally {
+            response.close();
+        }
     }
 
     /**
      * 读取加载外部自定义词典
      *
+     * @param wordFreqMap
      * @return
      * @throws IOException
      */
-    private TreeMap<String, Long> loadCustomerDictionary() throws IOException {
-        TreeMap<String, Long> extFreq = new TreeMap<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(configuration.getCustomerDictionaryFile()))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                if (line.length() == 0) {
-                    continue;
-                }
-                String[] wordFreq = line.split(",");
-                String cleanWord = clean(wordFreq[0]); // 把自定义的词归一化处理
-                if (wordFreq.length == 3 && "1".equals(wordFreq[2])) {
-                    // 是元词
-                    this.metaWords.add(cleanWord);
-                }
-                if (wordFreq.length == 1) {
-                    extFreq.put(cleanWord, 100000L);
-                } else {
-                    extFreq.put(cleanWord, Long.parseLong(wordFreq[1]));
-                }
-            }
-
-        } catch (IOException e) {
-            logger.error("custom dictionary load fail:{}", e.getMessage(), e);
+    private void loadCustomerDictionary(Map<String, Double> wordFreqMap) throws IOException {
+        if (configuration.getCustomerDictionaryFiles() == null) {
+            return;
         }
-        return extFreq;
+        for (String customerDictionaryFile : configuration.getCustomerDictionaryFiles()) {
+            try (InputStream is = new FileInputStream(customerDictionaryFile);
+                BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"), 10240)) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.length() == 0) {
+                        continue;
+                    }
+                    processDicLine(wordFreqMap, line);
+                }
+            } catch (IOException e) {
+                logger.error("custom dictionary load fail:{}", e.getMessage(), e);
+            }
+        }
+        return;
+    }
+
+    private void processDicLine(Map<String, Double> wordFreqMap, String line) {
+        String[] wordFreq = line.split(",");
+        String cleanWord = clean(wordFreq[0]); // 把自定义的词归一化处理
+        if (wordFreq.length == 3 && "1".equals(wordFreq[2])) {
+            // 是元词
+            this.metaWords.add(cleanWord);
+        }
+        //元次也要加入词典
+        if (wordFreq.length == 1) {
+            wordFreqMap.put(cleanWord, 100000.0);
+        } else {
+            Double freq = Double.parseDouble(wordFreq[1]);
+            this.total += freq;
+            wordFreqMap.put(cleanWord, freq);
+        }
     }
 
     /**
      * 从词典构建字典树
      */
-    private void buildTrie(TreeMap<String, Long> freq, TreeMap<String, Long> extFreq) {
-        TreeMap<String, Double> wordFreq = new TreeMap<String, Double>();
-        freq.forEach((k, v) -> {
+    private void buildTrie(Map<String, Double> wordFreqMap) {
+        wordFreqMap.forEach((k, v) -> {
             //保证了单字的词频大概率比词低
             if (k.length() > 1 && v <= 100) {
                 v = 100 * v;
             } else if (k.length() == 1 && v >= 10000) {
                 v = v / 1000;
             }
-            wordFreq.put(k, Math.abs(this.logTotal - Math.log(v)));
+            wordFreqMap.put(k, Math.abs(this.logTotal - Math.log(v)));
         });
-        extFreq.forEach((k, v) -> {
-            wordFreq.put(k, Math.abs(this.logTotal - Math.log(v)));
-        });
-        this.doubleArrayTrie.build(wordFreq);
+
+        this.doubleArrayTrie.build(wordFreqMap);
     }
 
     /**
