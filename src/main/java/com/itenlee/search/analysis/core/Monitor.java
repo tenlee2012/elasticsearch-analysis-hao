@@ -8,7 +8,6 @@ import okhttp3.Response;
 import org.apache.logging.log4j.Logger;
 import org.elasticsearch.SpecialPermission;
 
-import java.io.FileOutputStream;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 
@@ -23,11 +22,11 @@ public class Monitor implements Runnable {
     /*
      * 上次更改时间
      */
-    private String last_modified;
+    static protected String lastModified;
     /*
      * 资源属性
      */
-    private String eTags;
+    static protected String eTags;
 
     /*
      * 请求地址
@@ -38,14 +37,14 @@ public class Monitor implements Runnable {
 
     public Monitor(String location, Configuration configuration) {
         this.location = location;
-        this.last_modified = null;
-        this.eTags = null;
+        lastModified = null;
+        eTags = null;
         this.configuration = configuration;
     }
 
     public void run() {
         SpecialPermission.check();
-        AccessController.doPrivileged((PrivilegedAction<Void>) () -> {
+        AccessController.doPrivileged((PrivilegedAction<Void>)() -> {
             this.runUnprivileged();
             return null;
         });
@@ -65,22 +64,20 @@ public class Monitor implements Runnable {
 
         try {
 
-            response = httpClient.get(location, last_modified, eTags);
+            response = httpClient.head(location, lastModified, eTags);
 
             //返回200 才做操作
             if (response.code() == 200) {
 
-                if ((response.header("Last-Modified") != null && !response.header("Last-Modified").equalsIgnoreCase(last_modified))
-                        || (response.header("ETag") != null && !response.header("ETag").equalsIgnoreCase(eTags))) {
+                if ((response.header("Last-Modified") != null && !response.header("Last-Modified")
+                    .equalsIgnoreCase(lastModified)) || (response.header("ETag") != null && !response.header("ETag")
+                    .equalsIgnoreCase(eTags))) {
                     DingRotService.sendDingTalkMessage("词库变化开始重构...", configuration.getDingWebHookUrl());
 
                     // 远程词库有更新,需要重新加载词典，并修改last_modified,eTags
-                    last_modified = response.header("Last-Modified");
+                    lastModified = response.header("Last-Modified");
                     eTags = response.header("ETag");
 
-                    FileOutputStream fos = new FileOutputStream(configuration.getRemoteDicFile());
-                    fos.write(response.body().bytes());
-                    fos.close();
                     Dictionary.getInstance().reLoadMainDict();
 
                     DingRotService.sendDingTalkMessage("词库重构成功结束", configuration.getDingWebHookUrl());
@@ -89,14 +86,14 @@ public class Monitor implements Runnable {
                 //没有修改，不做操作
                 //noop
             } else {
-                DingRotService.sendDingTalkMessage("词库读取失败:" + location + ", code " + response.code(), configuration.getDingWebHookUrl());
+                DingRotService.sendDingTalkMessage("词库读取失败:" + location + ", code " + response.code(),
+                    configuration.getDingWebHookUrl());
                 logger.info("remote_ext_dict {} return bad code {}", location, response.code());
             }
 
         } catch (Exception e) {
-            last_modified = null;
+            lastModified = null;
             eTags = null;
-            e.printStackTrace();
             DingRotService.sendDingTalkMessage("词库重构失败:" + e.getMessage(), configuration.getDingWebHookUrl());
             logger.error("remote_ext_dict {} error!", location, e);
         } finally {

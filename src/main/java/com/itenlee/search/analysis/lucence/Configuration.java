@@ -95,11 +95,6 @@ public class Configuration {
     private static final String CONFIG_FILE_NAME = "hanlp.properties";
 
     /**
-     * 远程词典存储的文件
-     */
-    public static final String REMOTE_DIC_FILE = "remote_dic.txt";
-
-    /**
      * @param indexSettings
      * @param name          分词器名称
      * @param env
@@ -112,7 +107,7 @@ public class Configuration {
         initialProperties(env);
 
         this.indexMode = settings.get("enableIndexMode", "false").equals("true");
-        this.autoWordLength = Integer.parseInt(settings.get("minAutoWordLength", "-1"));
+        this.autoWordLength = Integer.parseInt(settings.get("autoWordLength", "-1"));
         this.enableFallBack = settings.get("enableFallBack", "false").equals("true");
         this.enableFailDingMsg = settings.get("enableFailDingMsg", "false").equals("true");
         this.enableSingleWord = settings.get("enableSingleWord", "false").equals("true");
@@ -159,10 +154,6 @@ public class Configuration {
             path = getConfigInPluginDir().resolve(fileName).toString();
         }
         return path;
-    }
-
-    public String getRemoteDicFile() {
-        return getFilePath(REMOTE_DIC_FILE);
     }
 
     private static Path getConfigInPluginDir() {

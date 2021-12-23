@@ -450,7 +450,7 @@ public class AhoCorasickDoubleArrayTrie implements Serializable {
     /**
      * Build a AhoCorasickDoubleArrayTrie from a map
      */
-    public void build(TreeMap<String, Double> keySet) {
+    public void build(Map<String, Double> keySet) {
         new Builder().build(keySet);
     }
 

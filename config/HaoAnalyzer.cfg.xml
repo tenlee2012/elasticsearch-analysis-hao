@@ -10,7 +10,7 @@
     <entry key="syncDicTime">23:00:00</entry>
     <!-- 执行周期 -->
     <entry key="syncDicPeriodTime">86400</entry>
-    <!-- 远程词典，下载完会存储到 remote_dic.txt 文件中 -->
+    <!-- 远程词典url -->
     <entry key="remoteFreqDict">http://youdomain.com/custom_dictionary.txt</entry>
     <!-- 钉钉机器人URL -->
     <entry key="dingWebHookUrl">

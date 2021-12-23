@@ -2,5 +2,4 @@ grant {
   permission java.net.SocketPermission "*", "accept,connect,resolve"; // okhttp
   permission java.lang.RuntimePermission "getClassLoader"; // okhttp
   permission java.net.NetPermission "getProxySelector"; // okhttp
-  permission java.io.FilePermission "<<ALL FILES>>", "write";
 };

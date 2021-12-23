@@ -43,14 +43,14 @@ public class HttpClientUtil {
     }
 
     public static HttpClientUtil getInstance(Integer httpConnectTimeoutMill, Integer httpReadTimeoutMill,
-                                             Integer httpWriteTimeoutMill, Integer httpConnectPool,
-                                             Integer httpConnectKeepAliveSecond) {
+        Integer httpWriteTimeoutMill, Integer httpConnectPool, Integer httpConnectKeepAliveSecond) {
 
         if (instance == null) {
             synchronized (HttpClientUtil.class) {
                 if (instance == null) {
-                    OkHttpClient okHttpClient = initOkHttpClient(httpConnectTimeoutMill, httpReadTimeoutMill,
-                            httpWriteTimeoutMill, httpConnectPool, httpConnectKeepAliveSecond);
+                    OkHttpClient okHttpClient =
+                        initOkHttpClient(httpConnectTimeoutMill, httpReadTimeoutMill, httpWriteTimeoutMill,
+                            httpConnectPool, httpConnectKeepAliveSecond);
                     instance = new HttpClientUtil(okHttpClient);
                 }
             }
@@ -59,9 +59,9 @@ public class HttpClientUtil {
     }
 
     private static OkHttpClient initOkHttpClient(Integer httpConnectTimeoutMill, Integer httpReadTimeoutMill,
-                                                 Integer httpWriteTimeoutMill, Integer httpConnectPool, Integer httpConnectKeepAliveSecond) {
+        Integer httpWriteTimeoutMill, Integer httpConnectPool, Integer httpConnectKeepAliveSecond) {
         SpecialPermission.check();
-        return AccessController.doPrivileged((PrivilegedAction<OkHttpClient>) () -> {
+        return AccessController.doPrivileged((PrivilegedAction<OkHttpClient>)() -> {
             OkHttpClient.Builder builder = new OkHttpClient.Builder();
             if (httpConnectTimeoutMill != null) {
                 builder.connectTimeout(httpConnectTimeoutMill, TimeUnit.MILLISECONDS);
@@ -91,12 +91,9 @@ public class HttpClientUtil {
 
     public Response postJSONWithResponse(String url, String jsonContent) throws PrivilegedActionException {
         SpecialPermission.check();
-        return AccessController.doPrivileged((PrivilegedExceptionAction<Response>) () -> {
+        return AccessController.doPrivileged((PrivilegedExceptionAction<Response>)() -> {
             RequestBody body = RequestBody.create(jsonContent, HttpClientUtil.JSON);
-            Request request = new Request.Builder()
-                    .url(url)
-                    .post(body)
-                    .build();
+            Request request = new Request.Builder().url(url).post(body).build();
             Response response = okHttpClient.newCall(request).execute();
             return response;
         });
@@ -126,11 +123,20 @@ public class HttpClientUtil {
         throw exception;
     }
 
-    public Response get(String url, String lastModified, String eTags) throws PrivilegedActionException {
+    public Response get(String url) throws PrivilegedActionException {
         SpecialPermission.check();
-        return AccessController.doPrivileged((PrivilegedExceptionAction<Response>) () -> {
-            Request.Builder builder = new Request.Builder()
-                    .url(url);
+        return AccessController.doPrivileged((PrivilegedExceptionAction<Response>)() -> {
+            Request.Builder builder = new Request.Builder().url(url);
+            Request request = builder.get().build();
+            Response response = okHttpClient.newCall(request).execute();
+            return response;
+        });
+    }
+
+    public Response head(String url, String lastModified, String eTags) throws PrivilegedActionException {
+        SpecialPermission.check();
+        return AccessController.doPrivileged((PrivilegedExceptionAction<Response>)() -> {
+            Request.Builder builder = new Request.Builder().url(url);
             if (lastModified != null) {
                 builder.header("If-Modified-Since", lastModified);
             }
@@ -138,10 +144,9 @@ public class HttpClientUtil {
                 builder.header("If-None-Match", eTags);
             }
 
-            Request request = builder.get().build();
+            Request request = builder.head().build();
             Response response = okHttpClient.newCall(request).execute();
             return response;
         });
     }
-
 }
