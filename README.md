@@ -95,7 +95,7 @@ vX.Y.Z | X.Y.Z
 `baseDictionary` |基础词库文件名 | 放在插件`config`目录或者es的`config`目录，不用更改
 `customerDictionaryFile` | 用户自定义远程词库文件，多个文件用英文分号;分隔| 会存储在插件`config`目录或者es的`config`目录
 `remoteFreqDict` | 远程用户自定义词库文件 | 方便热更新，热更新通过下面两个参数定时更新。
-`syncDicTim` | 远程词库第一次同步时间 `hh:mm:ss` | -
+`syncDicTime` | 远程词库第一次同步时间 `hh:mm:ss` | -
 `syncDicPeriodTime` | 远程词库同步时间间隔,秒 | 比如 `syncDicTime=20:00:00,syncDicPeriodTime=86400`，则是每天20点同步
 `dingWebHookUrl` | 钉钉机器人url | 用于分词异常，同步词库异常/成功通知|
 `dingMsgContent` | 机器人通知文案 | 注意配置钉钉机器人的时候关键词要和这个文案匹配，不然会消息发送失败
