@@ -23,6 +23,12 @@ public class DingRotService {
             "}";
 
     public static void sendDingTalkMessage(String content, String webHook) {
+        if (webHook.trim().length() < 1) {
+            String msg = String.format("msg: %s. dingWebHookUrl is empty!", content);
+            logger.info(msg);
+            return;
+        }
+
         content = content.replace("\\", "\\\\").replace("\"", "\\\"");
         String json = String.format(MESSAGE_TEXT, content);
         try {
