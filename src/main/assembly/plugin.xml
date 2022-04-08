@@ -43,6 +43,7 @@
             <useTransitiveFiltering>true</useTransitiveFiltering>
             <includes>
                 <include>com.squareup.okhttp3:okhttp</include>
+                <include>org.jetbrains.kotlin:kotlin-stdlib</include>
                 <include>com.hankcs:hanlp</include>
                 <include>com.vdurmont:emoji-java</include>
             </includes>
