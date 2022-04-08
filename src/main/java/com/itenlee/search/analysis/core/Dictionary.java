@@ -1,7 +1,7 @@
 package com.itenlee.search.analysis.core;
 
 import com.hankcs.hanlp.HanLP;
-import com.itenlee.search.analysis.algorithm.AhoCorasickDoubleArrayTrie;
+import com.itenlee.search.analysis.algorithm.DoubleArrayTriePro;
 import com.itenlee.search.analysis.algorithm.TokenNode;
 import com.itenlee.search.analysis.help.DateUtil;
 import com.itenlee.search.analysis.help.ESPluginLoggerFactory;
@@ -20,11 +20,7 @@ import java.io.InputStreamReader;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -51,7 +47,7 @@ public class Dictionary {
     private HashSet<String> metaWords = new HashSet<>();
     private long total;
     private double logTotal;
-    private AhoCorasickDoubleArrayTrie doubleArrayTrie = new AhoCorasickDoubleArrayTrie();
+    private DoubleArrayTriePro doubleArrayTrie = new DoubleArrayTriePro();
 
     public static Dictionary getInstance() {
         if (instance == null) {
@@ -70,12 +66,17 @@ public class Dictionary {
                         instance.loadDict();
 
                         if (cfg.getRemoteFreqDict() != null) {
-                            // 建立监控线程
-                            logger.info("start monitor when {}", cfg.getSyncDicTime());
-                            long initialDelay = TextUtility.isEmpty(cfg.getSyncDicTime()) ? 300 :
-                                DateUtil.calcTimeGap(cfg.getSyncDicTime());
-                            pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), initialDelay,
-                                cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
+                            if (cfg.getSyncDicPeriodTime() == null || cfg.getSyncDicPeriodTime() < 30) {
+                                logger.warn("syncDicPeriodTime illegal: must >= 30");
+                            } else {
+                                // 建立监控线程
+                                logger.info("start monitor when {}", cfg.getSyncDicTime());
+                                long initialDelay =
+                                    TextUtility.isEmpty(cfg.getSyncDicTime()) ? cfg.getSyncDicPeriodTime() :
+                                        DateUtil.calcTimeGap(cfg.getSyncDicTime());
+                                pool.scheduleAtFixedRate(new Monitor(cfg.getRemoteFreqDict(), cfg), initialDelay,
+                                    cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
+                            }
                         }
                         logger.info("dic init ok");
                     } catch (Exception e) {
@@ -99,7 +100,7 @@ public class Dictionary {
      */
     private void loadDict() throws Exception {
         this.total = 0;
-        Map<String, Double> wordFreqMap = new HashMap<>(1048576); // 先100w吧
+        TreeMap<String, Double> wordFreqMap = new TreeMap<>();
         try (InputStream is = new FileInputStream(configuration.getBaseDictionaryFile());
             BufferedReader br = new BufferedReader(new InputStreamReader(is, "UTF-8"))) {
             String line;
@@ -108,7 +109,7 @@ public class Dictionary {
                     continue;
                 }
                 String[] wordFreq = line.split(",");
-                Double freq = Double.parseDouble(wordFreq[1]);
+                double freq = Double.parseDouble(wordFreq[1]);
                 wordFreqMap.put(wordFreq[0], freq);
                 this.total += freq;
             }
@@ -194,7 +195,7 @@ public class Dictionary {
             // 是元词
             this.metaWords.add(cleanWord);
         }
-        //元次也要加入词典
+        //元词也要加入词典
         if (wordFreq.length == 1) {
             wordFreqMap.put(cleanWord, 100000.0);
         } else {
@@ -205,9 +206,9 @@ public class Dictionary {
     }
 
     /**
-     * 从词典构建字典树
+     * 从词典构建双数组树
      */
-    private void buildTrie(Map<String, Double> wordFreqMap) {
+    private void buildTrie(TreeMap<String, Double> wordFreqMap) {
         wordFreqMap.forEach((k, v) -> {
             //保证了单字的词频大概率比词低
             if (k.length() > 1 && v <= 100) {
@@ -321,7 +322,7 @@ public class Dictionary {
         return logTotal;
     }
 
-    public AhoCorasickDoubleArrayTrie getDoubleArrayTrie() {
+    public DoubleArrayTriePro getDoubleArrayTrie() {
         return doubleArrayTrie;
     }
 }
