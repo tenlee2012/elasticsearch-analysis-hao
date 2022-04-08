@@ -2,20 +2,18 @@
 <!DOCTYPE properties SYSTEM "http://java.sun.com/dtd/properties.dtd">
 <properties>
     <comment>HAO Analyzer 扩展配置</comment>
-    <!-- 算法模型路径 -->
+    <!-- 基础词库路径，不建议修改 -->
     <entry key="baseDictionary">base_dictionary.txt</entry>
     <!-- 多个文件，用英文分分号;分隔，不支持自动读取文件目录下所有文件 -->
     <entry key="customerDictionaryFile">custom_dictionary.txt</entry>
-    <!-- 第一次执行的时间 HH:MM:ss 建议每天23点同步一次,如果为空则当前时间300s后开始执行-->
+    <!-- 第一次执行的时间 HH:MM:ss 建议每天23点同步一次,如果为空则当前时间syncDicPeriodTime后再次执行-->
     <entry key="syncDicTime">23:00:00</entry>
-    <!-- 执行周期 -->
+    <!-- 执行周秒,最小值30-->
     <entry key="syncDicPeriodTime">86400</entry>
     <!-- 远程词典url -->
-    <entry key="remoteFreqDict">http://youdomain.com/custom_dictionary.txt</entry>
+    <entry key="remoteFreqDict"></entry>
     <!-- 钉钉机器人URL -->
-    <entry key="dingWebHookUrl">
-        https://oapi.dingtalk.com/robot/send?access_token=d7f1
-    </entry>
+    <entry key="dingWebHookUrl">https://oapi.dingtalk.com/robot/send?access_token=d7f1</entry>
     <!-- 钉钉通知文案 -->
     <entry key="dingMsgContent">本地分词器失败，失败内容:{text}，失败原因:{reason}</entry>
 
