@@ -64,8 +64,8 @@ public class Dictionary {
                         instance = new Dictionary(cfg);
 
                         instance.loadDict();
-
-                        if (cfg.getRemoteFreqDict() != null) {
+                        
+                        if ((cfg.getRemoteFreqDict() != null) && (cfg.getRemoteFreqDict().trim().length() > 0)) {
                             if (cfg.getSyncDicPeriodTime() == null || cfg.getSyncDicPeriodTime() < 30) {
                                 logger.warn("syncDicPeriodTime illegal: must >= 30");
                             } else {
