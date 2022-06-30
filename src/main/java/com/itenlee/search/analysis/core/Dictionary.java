@@ -51,7 +51,7 @@ public class Dictionary {
 
     public static Dictionary getInstance() {
         if (instance == null) {
-            throw new IllegalStateException("dict has not been initialized yet, please call initial method first.");
+            throw new IllegalStateException("hao dict has not been initialized yet, please call initial method first.");
         }
         return instance;
     }
@@ -64,8 +64,7 @@ public class Dictionary {
                         instance = new Dictionary(cfg);
 
                         instance.loadDict();
-
-                        if (cfg.getRemoteFreqDict() != null) {
+                        if ((cfg.getRemoteFreqDict() != null) && (cfg.getRemoteFreqDict().trim().length() > 0)) {
                             if (cfg.getSyncDicPeriodTime() == null || cfg.getSyncDicPeriodTime() < 30) {
                                 logger.warn("syncDicPeriodTime illegal: must >= 30");
                             } else {
@@ -78,7 +77,7 @@ public class Dictionary {
                                     cfg.getSyncDicPeriodTime(), TimeUnit.SECONDS);
                             }
                         }
-                        logger.info("dic init ok");
+                        logger.info("hao dic init ok");
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -120,6 +119,7 @@ public class Dictionary {
         this.loadCustomerDictionary(wordFreqMap);
         this.loadRemoteDictionary(wordFreqMap);
         this.logTotal = Math.log(total);
+        logger.info("wordFreqMap size: {}, hao dic start to buildTrie ... ", wordFreqMap.size());
         this.buildTrie(wordFreqMap);
     }
 
@@ -303,7 +303,7 @@ public class Dictionary {
     }
 
     public void reLoadMainDict() throws Exception {
-        logger.info("start to reload dict.");
+        logger.info("start to reload hao dict.");
         // 新开一个实例加载词典，减少加载过程对当前词典使用的影响
         Dictionary tmpDict = new Dictionary(configuration);
         tmpDict.loadDict();
@@ -311,7 +311,7 @@ public class Dictionary {
         instance.logTotal = tmpDict.logTotal;
         instance.doubleArrayTrie = tmpDict.doubleArrayTrie;
         instance.metaWords = tmpDict.metaWords;
-        logger.info("reload dict finished.");
+        logger.info("reload hao dict finished.");
     }
 
     public HashSet<String> getMetaWords() {

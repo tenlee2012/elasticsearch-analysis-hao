@@ -22,11 +22,11 @@ public class Monitor implements Runnable {
     /*
      * 上次更改时间
      */
-    static protected String lastModified;
+    static protected String lastModified = null;
     /*
      * 资源属性
      */
-    static protected String eTags;
+    static protected String eTags = null;
 
     /*
      * 请求地址
@@ -37,8 +37,8 @@ public class Monitor implements Runnable {
 
     public Monitor(String location, Configuration configuration) {
         this.location = location;
-        lastModified = null;
-        eTags = null;
+        // lastModified = null;     // 会导致初始化后，远程词典未修改的情况下，重复加载词典
+        // eTags = null;            // 会导致初始化后，远程词典未修改的情况下，重复加载词典
         this.configuration = configuration;
     }
 
@@ -63,7 +63,7 @@ public class Monitor implements Runnable {
         Response response = null;
 
         try {
-
+            logger.info("check remote hao dict ...");
             response = httpClient.head(location, lastModified, eTags);
 
             //返回200 才做操作
