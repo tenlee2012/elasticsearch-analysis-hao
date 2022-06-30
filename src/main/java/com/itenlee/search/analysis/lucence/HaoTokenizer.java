@@ -82,7 +82,8 @@ public final class HaoTokenizer extends Tokenizer {
     @Override
     public void end() throws IOException {
         super.end();
-        offsetAtt.setOffset(totalOffset, totalOffset);
+        int finalOffset = correctOffset(this.totalOffset);
+        offsetAtt.setOffset(finalOffset, finalOffset);
         totalOffset = 0;
     }
 
