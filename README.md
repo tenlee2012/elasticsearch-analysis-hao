@@ -138,6 +138,9 @@ PUT test/
             "tokenizer": "my_search_token"
           },
           "index_analyzer": {
+            "filter": [
+              "lowercase"
+            ],
             "char_filter": [
               "html_strip"
             ],
