@@ -1,7 +1,7 @@
 package com.itenlee.search.analysis.help;
 
 import com.hankcs.hanlp.corpus.io.IIOAdapter;
-import org.elasticsearch.common.io.PathUtils;
+import org.elasticsearch.core.PathUtils;
 import org.elasticsearch.plugin.analysis.hao.AnalysisHaoPlugin;
 
 import java.io.File;
