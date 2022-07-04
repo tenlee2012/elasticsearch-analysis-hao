@@ -22,6 +22,10 @@ do
     sed -i "" "s/super(indexSettings, settings)/super(indexSettings, settings, name)/" src/main/java/org/elasticsearch/index/analysis/hao/HaoTokenizerFactory.java
     echo "$?";
   fi
+  if [[ $element == 8.3.0 ]]; then
+    sed -i "" "s/super(indexSettings, name, settings)/super(name, settings)/" src/main/java/org/elasticsearch/index/analysis/hao/HaoAnalyzerProvider.java
+    echo "$?";
+  fi
   if [[ $element == 7.14.0 ]]; then
     sed -i "" "s/org.elasticsearch.common.io.PathUtils/org.elasticsearch.core.PathUtils/" src/main/java/com/itenlee/search/analysis/lucence/Configuration.java
     sed -i "" "s/org.elasticsearch.common.io.PathUtils/org.elasticsearch.core.PathUtils/" src/main/java/com/itenlee/search/analysis/help/MyIIOAdapter.java
