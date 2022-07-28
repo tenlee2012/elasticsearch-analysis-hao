@@ -24,7 +24,7 @@ public class HaoAnalyzerProvider extends AbstractIndexAnalyzerProvider<HaoAnalyz
      * @param settings
      */
     public HaoAnalyzerProvider(IndexSettings indexSettings, Environment env, String name, Settings settings, boolean indexMode) {
-        super(name, settings);
+        super(indexSettings, name, settings);
         Configuration configuration = new Configuration(indexSettings, name, env, settings).setIndexMode(indexMode);
 
         analyzer = new HaoAnalyzer(configuration);

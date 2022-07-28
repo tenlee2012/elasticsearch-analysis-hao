@@ -69,7 +69,9 @@ public final class HaoTokenizer extends Tokenizer {
 
         if (term != null) {
             positionAttr.setPositionIncrement(position);
-            termAtt.setEmpty().append(term.getText());
+            if (term.getText() != null) {
+                termAtt.setEmpty().append(term.getText());
+            }
             offsetAtt.setOffset(correctOffset(totalOffset + term.getOffset()),
                     correctOffset(totalOffset + term.getOffset() + term.getText().length()));
             return true;

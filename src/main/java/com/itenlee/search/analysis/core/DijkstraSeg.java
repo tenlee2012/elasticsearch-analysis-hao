@@ -53,8 +53,10 @@ public class DijkstraSeg {
         List<Term> terms = decorateResultForIndexMode(vertexList, wordNetAll, indexMode, enableSingleWord);
         if (terms.size() > 0) {
             Collections.sort(terms);
+            return terms;
         }
-        return terms;
+        // 说明全是不分词的无意义字符
+        return Collections.singletonList(new Term(0, sentence.length(), null, null));
     }
 
     private WordNet generateWordNet(List<TokenNode> nodes, int autoWordLength) {
