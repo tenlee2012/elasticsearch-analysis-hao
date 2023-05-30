@@ -53,7 +53,7 @@ vX.Y.Z | X.Y.Z
 ### 安装
 方式1. `bin/elasticsearch-plugin install file:///Users/xiaoming/Download/analysis-hao.zip`
 
-方式2. 解压后，放在es plugins目录即可，保证是如下目录结构 `{ES_HOME}/plugins/analysis-hao/(各种jar等文件)`，同时目录不能用zip文件
+方式2. 解压后，放在es plugins目录即可，保证是如下目录结构 `{ES_HOME}/plugins/analysis-hao/(各种jar等文件)`，同时目录不能有zip文件
 
 最后重启ES
 
